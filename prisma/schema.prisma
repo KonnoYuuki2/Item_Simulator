@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model items { //아이템의 정보가 필요하겠죠?
+  itemId Int @id @default(autoincrement()) @map("itemId")
+  itemCode Int @unique @map("itemCode")
+  // 아이템 리스트에서 itemCode만을 불러와서 invens에 저장하고 싶다.
+  invenId Int? @map("invenId")
+  equipId Int? @map("equipId")
+  itemName String @map("itemName")
+  image String @map("image")
+  itemPower Int @map("itemPower")
+  itemHealth Int @map("itemHealth")
+  Price Int @map("Price")
+
+  equip equips? @relation(fields: [equipId], references: [equipId], onDelete:Cascade)
+  inven invens? @relation(fields: [invenId], references: [invenId], onDelete:Cascade)
+  @@map("items")
+
+}
+
+model invens { //캐릭터-인벤토리 테이블
+  invenId Int @id @default(autoincrement()) @map("invenId")
+  charId Int @unique @map("charId")
+  items items[]
+  character characters @relation(fields: [charId], references: [charId], onDelete:Cascade)
+  @@map("invens")
+}
+
+model equips { //캐릭터-아이템 테이블
+  equipId Int @id @default(autoincrement()) @map("equipId")
+  charId Int @map("charId")
+
+  items items[] 
+  character characters @relation(fields: [charId], references: [charId], onDelete:Cascade)
+  @@map("equips")
+}
+
+model accounts {
+   accountId Int @id @default(autoincrement()) @map("accountId")
+   id String @unique @map("id")
+   password String @map("password")
+   passCheck String @map("passCheck")
+
+   characters characters[]
+
+   @@map("accounts")
+}
+
+model characters {
+   charId Int @id @default(autoincrement()) @map("characterId")
+   accountId Int @map("accountId")
+   charName String @map("charName")
+   charHealth Int @default(500) @map("charHealth")
+   charPower Int @default(100) @map("charPower")
+   charMoney Int @default(10000) @map("charMoney")
+
+   account accounts @relation(fields: [accountId], references: [accountId], onDelete:Cascade)
+   invens invens?
+   equips equips[]
+   @@map("characters")
+}
+
