@@ -20,7 +20,7 @@ router.post("/accounts", async (req, res, next) => {
     }
 
     const isExistedId = await prisma.accounts.findFirst({
-        where: { id: id },
+        where: { id: id }
     });
 
     const hashedPassword = await bcrypt.hash(password, 5);
@@ -32,21 +32,21 @@ router.post("/accounts", async (req, res, next) => {
         data: {
             id: id,
             password: hashedPassword,
-            passCheck: hashedPassword,
+            passCheck: hashedPassword
         },
         select: {
-            id: true,
-        },
+            id: true
+        }
     });
 
-    return res.status(200).json({ data: newAccount });
+    return res.status(201).json({ data: newAccount });
 });
 
 //로그인
 router.post("/login", async (req, res, next) => {
     const { id, password } = req.body;
     const user = await prisma.accounts.findFirst({
-        where: { id: id },
+        where: { id: id }
     });
 
     if (!user) {
@@ -62,13 +62,10 @@ router.post("/login", async (req, res, next) => {
     }
 
     const accessToken = jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
-        expiresIn: "1d",
-
+        expiresIn: "1d"
     });
-    
+
     res.header("Authorization", `Bearer ${accessToken}`);
-    
-    req.session.accountId = res.getHeader("Authorization");
 
     return res.status(200).json({ Message: "로그인에 성공했습니다." });
 });

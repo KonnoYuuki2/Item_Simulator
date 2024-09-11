@@ -1,4 +1,4 @@
-import { prisma } from "../../../utils/prisma/index.js";
+import { prisma } from "../../utils/prisma/index.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
@@ -6,11 +6,10 @@ dotenv.config();
 
 export default async function (req, res, next) {
     try {
-        const { accountId } = req.session;
+        const authorizationHeader = req.headers["authorization"];
+
         //jwt로 세션 아이디 해제하기
-
-        const [tokentype, token] = accountId.split(" ");
-
+        const [tokentype, token] = authorizationHeader.split(" ");
         if (tokentype !== "Bearer") {
             throw new Error("토큰 타입이 Bearer가 아님");
         }
@@ -21,7 +20,7 @@ export default async function (req, res, next) {
 
         const { id } = saveId;
         const account = await prisma.accounts.findFirst({
-            where: { id: id },
+            where: { id: id }
         });
 
         if (!account) throw new Error("토큰 사용자가 존재하지 않습니다.");
@@ -29,6 +28,6 @@ export default async function (req, res, next) {
         req.account = account;
         next();
     } catch (error) {
-        return res.status(400).json({ message: error });
+        return res.status(401).json({ message: error });
     }
 }

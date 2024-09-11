@@ -13,28 +13,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model items { //아이템의 정보가 필요하겠죠?
-  itemId Int @id @default(autoincrement()) @map("itemId")
-  itemCode Int @unique @map("itemCode")
-  // 아이템 리스트에서 itemCode만을 불러와서 invens에 저장하고 싶다.
-  invenId Int? @map("invenId")
-  equipId Int? @map("equipId")
-  itemName String @map("itemName")
-  image String @map("image")
-  itemPower Int @map("itemPower")
-  itemHealth Int @map("itemHealth")
-  Price Int @map("Price")
-
-  equip equips? @relation(fields: [equipId], references: [equipId], onDelete:Cascade)
-  inven invens? @relation(fields: [invenId], references: [invenId], onDelete:Cascade)
+// 1. 코드량 줄이기 (조건이나 이런 부분에서 너무 따지는게 많기도 한데 좀 필요하다고 생각하기도 함)
+// 최대한 줄일 수 있다면 줄여보고 아니라면 냅두기.
+// 2. item의 장비에 type을 주고자 함
+// type은 해당장비가 어디에 장착될 수 있는지, 즉 어떤 종류의 장비인지를 확인시켜줌
+model items {
+  itemId     Int     @id @default(autoincrement()) @map("itemId")
+  itemCode   Int     @unique @map("itemCode") // 기존 필드 유지
+  itemLv     Int     @default(1) @map("itemLv")
+  //itemType이 문자열일 경우에는 Where문을 쓰는 것이 불가능하다.
+  itemType   Int  @map("itemType")
+  itemName   String  @map("itemName")
+  image      String  @map("image")
+  itemPower  Int     @map("itemPower")
+  itemHealth Int     @map("itemHealth")
+  Price      Int     @map("Price")
+  
   @@map("items")
-
 }
 
 model invens { //캐릭터-인벤토리 테이블
   invenId Int @id @default(autoincrement()) @map("invenId")
-  charId Int @unique @map("charId")
-  items items[]
+  charId Int @map("charId")
+  itemCode Int @map("itemCode")
+  quantity Int @default(1) @map("quantity")
+
   character characters @relation(fields: [charId], references: [charId], onDelete:Cascade)
   @@map("invens")
 }
@@ -42,8 +45,9 @@ model invens { //캐릭터-인벤토리 테이블
 model equips { //캐릭터-아이템 테이블
   equipId Int @id @default(autoincrement()) @map("equipId")
   charId Int @map("charId")
+  itemCode Int @map("itemCode")
+  itemType Int @map("itemType")
 
-  items items[] 
   character characters @relation(fields: [charId], references: [charId], onDelete:Cascade)
   @@map("equips")
 }
@@ -61,6 +65,7 @@ model accounts {
 
 model characters {
    charId Int @id @default(autoincrement()) @map("characterId")
+   charLv Int @default(1) @map("charLv")
    accountId Int @map("accountId")
    charName String @map("charName")
    charHealth Int @default(500) @map("charHealth")
@@ -68,7 +73,7 @@ model characters {
    charMoney Int @default(10000) @map("charMoney")
 
    account accounts @relation(fields: [accountId], references: [accountId], onDelete:Cascade)
-   invens invens?
+   invens invens[]
    equips equips[]
    @@map("characters")
 }

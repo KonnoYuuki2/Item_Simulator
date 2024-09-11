@@ -1,0 +1,199 @@
+계정 생성
+/api/accounts  
+req: {"id": "소문자 및 숫자만","password":"암거나" } 
+res: data: {"id": "생성한 아이디"}
+
+계정 로그인
+/api/login 
+req: {"id": "kkung44", "password": "1234568"} 
+res: header: Authorization, {message: "로그인에 성공했습니다."}
+
+캐릭터 생성(post)
+/api/character 
+req: {"charName": "고졸사토루1"} 
+res: data: {"charName"}
+
+캐릭터 삭제(delete)
+/api/character/:charId 
+req: {} 
+res:{message: '고졸사토루1이 삭제되었습니다.'}
+
+캐릭터 상세조회(get)
+/api/character/:charId 
+req: {} 
+res:{"data": {
+        //자신의 아이디였을 경우
+		"charLv": 61,
+		"charName": "고졸사토루2",
+		"charHealth": 960,
+		"charPower": 170,
+		"charMoney": 7850
+
+        //자신의 아이디가 아닐 경우
+        "charLv": 61,
+		"charName": "고졸사토루2",
+		"charHealth": 960,
+		"charPower": 170
+}}
+
+캐릭터 레벨업(put)
+/api/charLv/:charId
+req: {}
+res: {
+	"message": "캐릭터가 보스몬스터를 쓰러트려 폭렙했습니다."
+}
+
+아이템 생성(post)
+/api/items
+req: {
+	"itemCode": 10,
+	//itemLv 생략 가능
+	"itemLv": 30,
+	"itemType": 4,
+	"image": "CASE.png",
+	"itemName": "산타마리아",
+	"itemHealth": 200,
+	"itemPower": 20,
+	"Price": 750
+}
+res: {
+	"message": "스테락 생성이 완료되었습니다."
+}
+
+아이템 수정(post)
+/api/items/:itemCode
+req: {
+    //Price를 제외한 모든 정보의 수정이 가능.
+    "itemName": "비에고의 몰락한 왕의 검",
+	"itemPower": 50
+}
+res: {
+	"message": "아이템 수정에 성공했습니다."
+}
+ 
+아이템 목록 조회(get)
+/api/items
+req: {}
+res: {
+    "itemList": [
+		{
+			"itemId": 1,
+			"itemCode": 44,
+			"itemLv": 30,
+			"itemType": 1,
+			"itemName": "비에고의 숨겨진 몰왕의 검",
+			"Price": 750
+		},
+		{
+			"itemId": 2,
+			"itemCode": 7,
+			"itemLv": 30,
+			"itemType": 2,
+			"itemName": "스테락의 도전",
+			"Price": 750
+		}
+	]
+}
+
+아이템 상세 조회(get)
+/api/items/:itemCode
+req: {}
+res: "data": {
+		"itemId": 1,
+		"itemCode": 44,
+		"itemLv": 30,
+		"itemType": 1,
+		"itemName": "비에고의 숨겨진 몰왕의 검",
+		"image": "molKing.png",
+		"itemPower": 20,
+		"itemHealth": 200,
+		"Price": 750
+}
+
+아이템 구매(post)
+/store/:charId
+req: {
+    "itemCode" : 44,
+	"count": 1
+}
+res: {
+    //기존의 인벤토리에 있는 아이템 구매시
+    "message": "아이템 구매 완료!"
+    //아닐 경우엔 
+	"message": "새로운 아이템 구매 완료!"
+}
+
+아이템 판매(delete)
+/store/sell/:charId
+req: {
+    "itemCode" : 2,
+	"count": 1
+}
+res: {
+	"message": "해당 아이템이 판매가 되었습니다."
+}
+
+아이템 인벤토리 조회(get)
+/invens/:charId
+req: {}
+res: {
+	"data": [
+		{
+			"itemId": 1,
+			"itemCode": 44,
+			"itemLv": 30,
+			"itemName": "비에고의 숨겨진 몰왕의 검",
+			"image": "molKing.png",
+			"quantity": 1
+		}
+	]
+}
+
+아이템 장착(post)
+/equips/:charId
+req: {
+    "itemCode" : 44
+}
+res: {
+	"message": "비에고의 숨겨진 몰왕의 검가 장착되었습니다."
+}
+
+아이템 탈착(post)
+/equipsOut/:charId
+req: {
+    "itemCode" : 44
+}
+res: {
+	"message": "비에고의 숨겨진 몰왕의 검 탈착에 성공했습니다."
+}
+
+아이템 장착 리스트 조회(get)
+/equipList/:charId
+req: {}
+res: {
+    "data": [
+		{
+			"item": {
+				"itemCode": 10,
+				"itemLv": 1,
+				"itemName": "산타마리아",
+				"itemType": 4
+			}
+		},
+		{
+			"item": {
+				"itemCode": 44,
+				"itemLv": 30,
+				"itemName": "비에고의 숨겨진 몰왕의 검",
+				"itemType": 1
+			}
+		}
+	]
+}
+
+돈 벌기(put)
+/money/:charId
+req: {}
+res: {
+    Message: '캐릭터에 돈이 뒷돈이 입급되었습니다. 쉿.'
+}

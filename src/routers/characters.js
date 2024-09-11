@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "../../utils/prisma/index.js";
-import authMiddlewares from "./middlewares/auth.middlewares.js";
+import authMiddlewares from "../middlewares/auth.middlewares.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
@@ -14,17 +14,19 @@ router.post("/character", authMiddlewares, async (req, res, next) => {
     const { charName } = req.body;
 
     const account = await prisma.accounts.findFirst({
-        where: { accountId: accountId },
+        where: { accountId: accountId }
     });
 
-    if(!account) {
-        return res.status(400).json({errorMessage: '계정이 존재하지 않습니다.'});
+    if (!account) {
+        return res
+            .status(400)
+            .json({ errorMessage: "계정이 존재하지 않습니다." });
     }
 
     const isName = await prisma.characters.findFirst({
         where: {
-            charName: charName,
-        },
+            charName: charName
+        }
     });
 
     if (isName) {
@@ -36,23 +38,11 @@ router.post("/character", authMiddlewares, async (req, res, next) => {
     const character = await prisma.characters.create({
         data: {
             accountId: accountId,
-            charName: charName,
-        },
+            charName: charName
+        }
     });
 
-    const inven = await prisma.invens.create({
-        data: {
-            charId: character.charId,
-        }
-    })
-
-    const equip = await prisma.equips.create({
-        data: {
-            charId: character.charId,
-        }
-    })
-
-    return res.status(200).json({ data: charName });
+    return res.status(201).json({ data: character.charName });
 });
 
 //캐릭터 삭제
@@ -63,8 +53,8 @@ router.delete("/character/:charId", authMiddlewares, async (req, res, next) => {
     const character = await prisma.characters.findFirst({
         where: {
             charId: +charId,
-            accountId: accountId,
-        },
+            accountId: accountId
+        }
     });
 
     if (!character) {
@@ -74,47 +64,48 @@ router.delete("/character/:charId", authMiddlewares, async (req, res, next) => {
     }
 
     const deleteChar = await prisma.characters.delete({
-        where: { charId: +character.charId },
+        where: { charId: +character.charId }
     });
 
-    return res.status(200).json({ message: "캐릭터가 삭제되었습니다." });
+    return res
+        .status(200)
+        .json({ message: `${character.charName}이 삭제되었습니다.` });
 });
 
 //캐릭터 상세 조회
 router.get("/character/:charId", async (req, res, next) => {
-    const { accountId } = req.session; //accountId가 아니라 id
+    const authorizationHeader = req.headers["authorization"]; //accountId가 아니라 id
     const { charId } = req.params;
 
-    // 세션에 accountId가 있는지 없는지부터 확인을 한다.
-    // 있다면 해당 Id로 account값을 가져온다.
-    // 가져온 account 계정에 있는 Id들 중에서 해당하는 계정이 있는지 없는지 확인한다.(for in)
-
-    if (!accountId) {
+    if (!authorizationHeader) {
         const character = await prisma.characters.findFirst({
             where: { charId: +charId },
             select: {
+                charLv: true,
                 charName: true,
                 charHealth: true,
-                charPower: true,
-            },
+                charPower: true
+            }
         });
         return res.status(200).json({ data: character });
     }
 
-    const { id } = jwt.verify(accountId, process.env.ACCESS_TOKEN_SECRET_KEY);
+    const [tokenId, token] = authorizationHeader.split(" ");
+    const { id } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
 
     const account = await prisma.accounts.findFirst({
-        where: { id: id },
+        where: { id: id }
     });
 
     if (!account) {
         const character = await prisma.characters.findFirst({
             where: { charId: +charId },
             select: {
+                charLv: true,
                 charName: true,
                 charHealth: true,
-                charPower: true,
-            },
+                charPower: true
+            }
         });
         return res.status(200).json({ data: character });
     }
@@ -122,16 +113,48 @@ router.get("/character/:charId", async (req, res, next) => {
     const character = await prisma.characters.findFirst({
         where: { charId: +charId },
         select: {
+            charLv: true,
             charName: true,
             charHealth: true,
             charPower: true,
-            charMoney: true,
-        },
+            charMoney: true
+        }
     });
     return res.status(200).json({ data: character });
 });
 
+// 캐릭터 레벨업!
+router.put("/charLv/:charId", authMiddlewares, async (req, res, next) => {
+    const { charId } = req.params;
+    const { accountId } = req.account;
 
+    const character = await prisma.characters.findFirst({
+        where: {
+            accountId: +accountId,
+            charId: +charId
+        }
+    });
 
+    if (!character) {
+        return res
+            .status(400)
+            .json({ errorMessage: "해당하는 캐릭터가 존재하지 않습니다." });
+    }
+
+    await prisma.characters.update({
+        where: {
+            charId: character.charId
+        },
+        data: {
+            charLv: character.charLv + 30,
+            charHealth: character.charHealth + 60,
+            charPower: character.charPower + 30
+        }
+    });
+
+    return res
+        .status(200)
+        .json({ message: "캐릭터가 보스몬스터를 쓰러트려 폭렙했습니다." });
+});
 
 export default router;

@@ -1,29 +1,34 @@
 import express from "express";
 import { prisma } from "../../utils/prisma/index.js";
 import dotenv from "dotenv";
-import authMiddlewares from "./middlewares/auth.middlewares.js";
-import jwt from 'jsonwebtoken';
 
 dotenv.config();
 const router = express.Router();
 //아이템 생성 API
 router.post("/items", async (req, res, next) => {
-    const { itemCode, itemName, image, itemHealth, itemPower, Price } = req.body;
+    const updateData = req.body;
 
+    const checkItemCode = await prisma.items.findFirst({
+        where: {
+            itemCode: updateData.itemCode,
+            itemName: updateData.itemName
+        }
+    });
+
+    if (checkItemCode) {
+        return res
+            .status(400)
+            .json({ errorMessage: `해당하는 아이템이 이미 존재합니다.` });
+    }
     const item = await prisma.items.create({
         data: {
-            itemCode: itemCode,
-            image: image,
-            itemName: itemName,
-            itemHealth: itemHealth,
-            itemPower: itemPower,
-            Price: Price,
+            ...updateData
         }
     });
 
     return res
-        .status(200)
-        .json({ message: `${itemName} 생성이 완료되었습니다.` });
+        .status(201)
+        .json({ message: `${item.itemName} 생성이 완료되었습니다.` });
 });
 
 //아이템 수정 API
@@ -31,11 +36,14 @@ router.post("/items/:itemCode", async (req, res, next) => {
     const { itemCode } = req.params;
     const updateData = req.body;
 
-    if(updateData.Price) {
-        return res.status(400).json({errorMessage: '가격은 수정할 수 없습니다.'});
+    if (updateData.Price) {
+        return res
+            .status(400)
+            .json({ errorMessage: "가격은 수정할 수 없습니다." });
     }
+
     const item = await prisma.items.findFirst({
-        where: { itemCode: +itemCode },
+        where: { itemCode: +itemCode }
     });
 
     if (!item) {
@@ -47,8 +55,8 @@ router.post("/items/:itemCode", async (req, res, next) => {
     await prisma.items.update({
         where: { itemCode: item.itemCode },
         data: {
-            ...updateData,
-        },
+            ...updateData
+        }
     });
 
     return res.status(200).json({ message: "아이템 수정에 성공했습니다." });
@@ -60,9 +68,11 @@ router.get("/items", async (req, res, next) => {
         select: {
             itemId: true,
             itemCode: true,
+            itemLv: true,
+            itemType: true,
             itemName: true,
-            Price: true,
-        },
+            Price: true
+        }
     });
 
     return res.status(200).json({ itemList: itemList });
@@ -73,14 +83,7 @@ router.get("/items/:itemCode", async (req, res, next) => {
     const { itemCode } = req.params;
 
     const item = await prisma.items.findFirst({
-        where: { itemCode: +itemCode },
-        select: {
-            image: true,
-            itemName: true,
-            itemHealth: true,
-            itemPower: true,
-            Price: true,
-        },
+        where: { itemCode: +itemCode }
     });
 
     if (!item) {
@@ -91,7 +94,5 @@ router.get("/items/:itemCode", async (req, res, next) => {
 
     return res.status(200).json({ data: item });
 });
-
-
 
 export default router;
