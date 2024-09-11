@@ -6,7 +6,8 @@ res: data: {"id": "생성한 아이디"}
 계정 로그인
 /api/login 
 req: {"id": "kkung44", "password": "1234568"} 
-res: header: Authorization, {message: "로그인에 성공했습니다."}
+res: header: Authorization, 
+"kkung44"
 
 캐릭터 생성(post)
 /api/character 
@@ -39,8 +40,16 @@ res:{"data": {
 캐릭터 레벨업(put)
 /api/charLv/:charId
 req: {}
-res: {
-	"message": "캐릭터가 보스몬스터를 쓰러트려 폭렙했습니다."
+res: "data": {
+		"character": {
+			"charId": 2,
+			"charLv": 121,
+			"accountId": 1,
+			"charName": "고졸사토루2",
+			"charHealth": 1280,
+			"charPower": 250,
+			"charMoney": 6600
+		}
 }
 
 아이템 생성(post)

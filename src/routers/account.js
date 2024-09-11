@@ -46,7 +46,7 @@ router.post("/accounts", async (req, res, next) => {
 router.post("/login", async (req, res, next) => {
     const { id, password } = req.body;
     const user = await prisma.accounts.findFirst({
-        where: { id: id }
+        where: { id: id },
     });
 
     if (!user) {
@@ -67,7 +67,7 @@ router.post("/login", async (req, res, next) => {
 
     res.header("Authorization", `Bearer ${accessToken}`);
 
-    return res.status(200).json({ Message: "로그인에 성공했습니다." });
+    return res.status(200).json(user.id);
 });
 
 export default router;

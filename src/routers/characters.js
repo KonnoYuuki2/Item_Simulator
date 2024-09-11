@@ -141,7 +141,7 @@ router.put("/charLv/:charId", authMiddlewares, async (req, res, next) => {
             .json({ errorMessage: "해당하는 캐릭터가 존재하지 않습니다." });
     }
 
-    await prisma.characters.update({
+    const newChar = await prisma.characters.update({
         where: {
             charId: character.charId
         },
@@ -154,7 +154,7 @@ router.put("/charLv/:charId", authMiddlewares, async (req, res, next) => {
 
     return res
         .status(200)
-        .json({ message: "캐릭터가 보스몬스터를 쓰러트려 폭렙했습니다." });
+        .json({data: {newChar}});
 });
 
 export default router;

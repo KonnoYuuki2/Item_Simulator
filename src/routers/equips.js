@@ -101,7 +101,7 @@ router.post("/equips/:charId", authMiddlewares, async (req, res, next) => {
 
             return res
                 .status(200)
-                .json({ message: `${item.itemName}가 장착되었습니다.` });
+                .json({ message: `${item.itemName}이(가) 장착되었습니다.` });
         }
 
         await prisma.$transaction(async (tx) => {
